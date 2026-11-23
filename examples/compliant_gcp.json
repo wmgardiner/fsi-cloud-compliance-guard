@@ -1,0 +1,44 @@
+{
+  "resource": {
+    "google_storage_bucket": {
+      "cardholder_exports": {
+        "public_access_prevention": "enforced",
+        "uniform_bucket_level_access": true,
+        "encryption": {
+          "default_kms_key_name": "projects/fsi-kms/locations/australia-southeast1/keyRings/pci/cryptoKeys/bucket-key"
+        }
+      }
+    },
+    "google_sql_database_instance": {
+      "core_ledger_db": {
+        "settings": {
+          "ip_configuration": {
+            "ipv4_enabled": false,
+            "require_ssl": true
+          }
+        }
+      }
+    },
+    "google_project_iam_binding": {
+      "ledger_reader": {
+        "role": "roles/cloudsql.viewer",
+        "members": ["group:ledger-auditors@bank.example"]
+      }
+    },
+    "google_logging_project_bucket_config": {
+      "audit_bucket": {
+        "retention_days": 730,
+        "locked": true
+      }
+    },
+    "google_access_context_manager_service_perimeter": {
+      "payments_perimeter": {
+        "restricted_services": [
+          "storage.googleapis.com",
+          "bigquery.googleapis.com",
+          "kms.googleapis.com"
+        ]
+      }
+    }
+  }
+}
