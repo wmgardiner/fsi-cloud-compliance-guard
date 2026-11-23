@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fsi-cloud-compliance-guard"
+version = "0.1.0"
+description = "FSI Cloud IaC Security & Regulatory Policy Scanner (PCI-DSS, APRA CPS 234, DORA, SOC 2)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+fsi-guard = "fsi_guard.cli:main"
