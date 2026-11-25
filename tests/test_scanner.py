@@ -51,6 +51,32 @@ class TestComplianceScanner(unittest.TestCase):
         output = format_markdown([])
         self.assertIn("No compliance violations detected", output)
 
+    def test_kms_and_bigquery_rules_and_framework_filter(self) -> None:
+        iac = {
+            "resource": {
+                "google_kms_crypto_key": {
+                    "stale_key": {"rotation_period": "31536000s"},
+                    "good_key": {"rotation_period": "7776000s"},
+                },
+                "google_bigquery_dataset": {
+                    "raw_trades": {},
+                    "encrypted_trades": {
+                        "default_encryption_configuration": {
+                            "kms_key_name": "projects/p/locations/l/keyRings/r/cryptoKeys/k"
+                        }
+                    },
+                },
+            }
+        }
+        findings = self.scanner.scan_dict(iac)
+        self.assertEqual({f.rule_id for f in findings}, {"FSI-KMS-001", "FSI-BQ-001"})
+
+        dora_only = self.scanner.filter_by_framework(findings, "DORA")
+        self.assertEqual([f.rule_id for f in dora_only], ["FSI-BQ-001"])
+
+        counts = self.scanner.severity_counts(findings)
+        self.assertEqual(counts["high"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
