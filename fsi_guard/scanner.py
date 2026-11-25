@@ -31,10 +31,31 @@ class ComplianceScanner:
         findings.sort(key=lambda f: (-f.severity.rank, f.rule_id, f.resource_name))
         return findings
 
-    def scan_file(self, path: Path) -> List[Finding]:
+    def scan_file(self, path: Path, framework: Optional[str] = None) -> List[Finding]:
         """Load a JSON IaC file and return sorted compliance findings."""
         data = json.loads(path.read_text(encoding="utf-8"))
-        return self.scan_dict(data)
+        findings = self.scan_dict(data)
+        if framework:
+            return self.filter_by_framework(findings, framework)
+        return findings
+
+    @staticmethod
+    def filter_by_framework(findings: List[Finding], framework: str) -> List[Finding]:
+        """Filter findings to those mapped to a specific regulatory framework."""
+        needle = framework.strip().lower()
+        return [
+            f
+            for f in findings
+            if any(needle in c.framework.lower() for c in f.controls)
+        ]
+
+    @staticmethod
+    def severity_counts(findings: List[Finding]) -> Dict[str, int]:
+        """Return a breakdown of finding counts by severity level."""
+        counts = {s.value: 0 for s in Severity}
+        for f in findings:
+            counts[f.severity.value] += 1
+        return counts
 
     @staticmethod
     def should_fail_gate(findings: List[Finding], fail_on: Severity) -> bool:

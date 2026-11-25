@@ -23,6 +23,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Report output format (default: markdown).",
     )
     parser.add_argument(
+        "--framework",
+        default=None,
+        help="Optional regulatory framework filter (e.g. 'PCI-DSS', 'APRA CPS 234', 'DORA', 'SOC 2').",
+    )
+    parser.add_argument(
         "--fail-on",
         choices=[s.value for s in Severity],
         default="high",
@@ -36,7 +41,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     scanner = ComplianceScanner()
-    findings = scanner.scan_file(args.target)
+    findings = scanner.scan_file(args.target, framework=args.framework)
 
     if args.format == "json":
         print(format_json(findings))
