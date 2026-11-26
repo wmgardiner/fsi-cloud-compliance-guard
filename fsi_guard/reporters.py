@@ -1,5 +1,7 @@
 """Output formatters (JSON, Markdown, SARIF) for FSI compliance reports."""
 
+import csv
+import io
 import json
 from typing import Dict, List
 
@@ -81,3 +83,14 @@ def format_sarif(findings: List[Finding], source_file: str = "iac.json") -> str:
         ],
     }
     return json.dumps(sarif, indent=2)
+
+
+def format_csv(findings: List[Finding]) -> str:
+    """Render compliance findings as CSV for GRC/audit spreadsheet import."""
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["severity", "rule_id", "resource_type", "resource_name", "title", "frameworks"])
+    for f in findings:
+        frameworks = "; ".join(f"{c.framework} ({c.control_id})" for c in f.controls)
+        writer.writerow([f.severity.value, f.rule_id, f.resource_type, f.resource_name, f.title, frameworks])
+    return buf.getvalue()

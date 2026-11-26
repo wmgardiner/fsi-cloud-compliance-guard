@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from fsi_guard.models import Severity
-from fsi_guard.reporters import format_json, format_markdown, format_sarif
+from fsi_guard.reporters import format_csv, format_json, format_markdown, format_sarif
 from fsi_guard.scanner import ComplianceScanner
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
@@ -92,6 +92,14 @@ class TestComplianceScanner(unittest.TestCase):
         }
         findings = self.scanner.scan_dict(iac)
         self.assertEqual({f.rule_id for f in findings}, {"FSI-GKE-001", "FSI-GKE-002"})
+
+
+    def test_csv_reporter_outputs_header_and_rows(self) -> None:
+        findings = self.scanner.scan_file(EXAMPLES_DIR / "non_compliant_gcp.json")
+        csv_text = format_csv(findings)
+        lines = [line for line in csv_text.strip().splitlines() if line]
+        self.assertEqual(len(lines), len(findings) + 1)
+        self.assertTrue(lines[0].startswith("severity,rule_id,"))
 
 
 if __name__ == "__main__":
