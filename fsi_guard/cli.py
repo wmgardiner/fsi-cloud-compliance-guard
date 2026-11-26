@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from fsi_guard.models import Severity
-from fsi_guard.reporters import format_json, format_markdown, format_sarif
+from fsi_guard.reporters import format_csv, format_json, format_markdown, format_sarif
 from fsi_guard.scanner import ComplianceScanner
 
 
@@ -18,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("target", type=Path, help="Path to Terraform/IaC JSON file.")
     parser.add_argument(
         "--format",
-        choices=["json", "markdown", "sarif"],
+        choices=["json", "markdown", "sarif", "csv"],
         default="markdown",
         help="Report output format (default: markdown).",
     )
@@ -47,6 +47,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(format_json(findings))
     elif args.format == "sarif":
         print(format_sarif(findings, source_file=str(args.target)))
+    elif args.format == "csv":
+        print(format_csv(findings), end="")
     else:
         print(format_markdown(findings))
 
