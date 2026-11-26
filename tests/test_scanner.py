@@ -78,5 +78,21 @@ class TestComplianceScanner(unittest.TestCase):
         self.assertEqual(counts["high"], 2)
 
 
+    def test_gke_cluster_rules(self) -> None:
+        iac = {
+            "resource": {
+                "google_container_cluster": {
+                    "public_cluster": {},
+                    "private_cluster": {
+                        "private_cluster_config": {"enable_private_nodes": True},
+                        "workload_identity_config": {"workload_pool": "proj.svc.id.goog"},
+                    },
+                }
+            }
+        }
+        findings = self.scanner.scan_dict(iac)
+        self.assertEqual({f.rule_id for f in findings}, {"FSI-GKE-001", "FSI-GKE-002"})
+
+
 if __name__ == "__main__":
     unittest.main()
